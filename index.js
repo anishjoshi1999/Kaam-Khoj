@@ -23,7 +23,7 @@ mongoose
     console.error("Error connecting to MongoDB Atlas:", err);
   });
 app.get("/", (req, res) => {
-  res.send("Jagir Khoj");
+  res.send("Kaam Khoj");
 });
 app.get("/jobs", async (req, res) => {
   await fetchData(res);
@@ -47,7 +47,7 @@ app.get("/facebook", async (req, res) => {
 
   const facebookResponse = await postNewsToFacebook(combinedNews);
   console.log("Automatic post request triggered:", facebookResponse.data);
-  res.send("/");
+  res.redirect("/");
 });
 async function postNewsToFacebook(sources) {
   const facebookUrl = `https://graph.facebook.com/${process.env.FACEBOOK_PAGE_ID}/feed`;
