@@ -5,10 +5,11 @@ const dotenv = require("dotenv");
 const Job = require("./Models/Job");
 const axios = require("axios");
 dotenv.config();
-
+app.set("view engine", "ejs");
+app.use(express.static(__dirname + "/public"));
+const { fetchData } = require("./utils/minimalJob");
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = `${process.env.MONGODB_URI}`;
-const { fetchData } = require("./utils/minimalJob");
 mongoose.set("strictQuery", false);
 
 mongoose
@@ -30,8 +31,72 @@ app.get("/jobs", async (req, res) => {
 });
 
 app.get("/api", async (req, res) => {
-  let jobs = await Job.find({});
-  res.send(jobs);
+  try {
+    let jobs = await Job.find({});
+    let driverJobs = [];
+    let cookJobs = [];
+    let houseJobs = [];
+    let receptionJobs = [];
+    let salesJobs = [];
+    let otherJobs = [];
+
+    jobs.forEach((job) => {
+      const lowerCaseJobName = job.jobName.toLowerCase();
+
+      if (lowerCaseJobName.includes("driver")) {
+        driverJobs.push(job);
+      } else if (lowerCaseJobName.includes("cook")) {
+        cookJobs.push(job);
+      } else if (/\bsale(s)?\b/.test(lowerCaseJobName)) {
+        salesJobs.push(job);
+      } else if (
+        lowerCaseJobName.includes("help") ||
+        lowerCaseJobName.includes("maid")
+      ) {
+        houseJobs.push(job);
+      } else if (lowerCaseJobName.includes("recept")) {
+        receptionJobs.push(job);
+      } else {
+        otherJobs.push(job);
+      }
+    });
+    let jobInformation = [
+      {
+        name: "Driving Jobs",
+        totalAvailableJobs: driverJobs.length,
+        jobs: driverJobs,
+      },
+      {
+        name: "Cook and Maid Jobs",
+        totalAvailableJobs: cookJobs.length,
+        jobs: cookJobs,
+      },
+      {
+        name: "Sales Jobs",
+        totalAvailableJobs: salesJobs.length,
+        jobs: salesJobs,
+      },
+      {
+        name: "Household Jobs",
+        totalAvailableJobs: houseJobs.length,
+        jobs: houseJobs,
+      },
+      {
+        name: "Reception Jobs",
+        totalAvailableJobs: receptionJobs.length,
+        jobs: receptionJobs,
+      },
+      {
+        name: "Other Jobs",
+        totalAvailableJobs: otherJobs.length,
+        jobs: otherJobs,
+      },
+    ];
+    res.send(jobInformation);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
 });
 
 app.get("/facebook", async (req, res) => {
@@ -39,7 +104,7 @@ app.get("/facebook", async (req, res) => {
   let randomJobs = getRandomObjects(jobs);
   const combinedNews = randomJobs
     .map((element, index) => {
-      return `Position ${index + 1}:  ${element.jobName}, Salary: Rs${
+      return `Position ${index + 1}:  ${element.jobName}, Salary: Rs ${
         element.salary
       } Per Month\n`;
     })

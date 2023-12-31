@@ -2,10 +2,11 @@ const mongoose = require("mongoose");
 
 const jobSchema = new mongoose.Schema({
   jobName: String,
-  salary: Number,
+  salary: String,
   ownerName: String,
   contactNumber: String,
   location: String,
+  createdTime: String,
 });
 
 const Job = mongoose.model("Job", jobSchema);

@@ -42,27 +42,31 @@ async function fetchData(res) {
       return !element.creatorInfo.createdByUsername.includes("*");
     });
 
-    const filteredJobInfos1 = withPhoneNumbers.filter((element) => {
-      return regex.test(element.name.toLowerCase());
-    });
-
-    const filteredJobInfos = filteredJobInfos1.filter((element) => {
+    const filteredJobInfos = withPhoneNumbers.filter((element) => {
       return !excludeRegex.test(element.name.toLowerCase());
     });
-
-    console.log(`Fetched ${filteredJobInfos.length} jobs`);
-
     // Clear existing jobs in the database
     await Job.deleteMany({});
-
+    //Only want the job which are less than 2 months old
+    let final = filteredJobInfos.filter((job) => {
+      return (
+        job.createdTime.includes("mins") ||
+        job.createdTime.includes("hours") ||
+        job.createdTime.includes("days") ||
+        (job.createdTime.includes("1 month") &&
+          !job.createdTime.includes("11 months"))
+      );
+    });
+    console.log(`Fetched ${final.length} latest jobs`);
     // Save each job to MongoDB
-    for (const element of filteredJobInfos) {
+    for (const element of final) {
       const job = new Job({
         jobName: toTitleCase(element.name),
-        salary: element.price,
+        salary: checkForSalary(element.price),
         ownerName: toTitleCase(element.creatorInfo.createdByName),
         contactNumber: toTitleCase(element.creatorInfo.createdByUsername),
         location: toTitleCase(element.location.locationDescription),
+        createdTime: element.createdTime,
       });
 
       await job.save();
@@ -82,5 +86,16 @@ function toTitleCase(inputString) {
   );
   return titleCaseWords.join(" ");
 }
-
+function checkForSalary(value) {
+  let salary = Number(value);
+  if (!isNaN(salary) && salary !== undefined) {
+    if (salary <= 5000) {
+      return "Negotiable";
+    } else {
+      return value;
+    }
+  } else {
+    return value;
+  }
+}
 module.exports = { fetchData };
