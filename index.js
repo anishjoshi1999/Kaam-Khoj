@@ -28,6 +28,7 @@ app.get("/", (req, res) => {
 });
 app.get("/jobs", async (req, res) => {
   await fetchData(res);
+  res.redirect('/');
 });
 
 app.get("/api", async (req, res) => {

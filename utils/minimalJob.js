@@ -72,8 +72,7 @@ async function fetchData(res) {
       await job.save();
     }
 
-    console.log("Jagir Khoj");
-    res.redirect("/");
+    console.log("Hit the Jobs API Route");
   } catch (error) {
     console.error("Error fetching and saving data:", error);
   }
