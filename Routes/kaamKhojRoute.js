@@ -5,12 +5,17 @@ const router = express.Router();
 
 const { fetchData } = require("../utils/minimalJob");
 const { fetchServiceData } = require("../utils/service");
+const { fetchContact } = require("../utils/grabContact");
 
 router.get("/jobs", async (req, res) => {
   await fetchData();
   res.redirect("/");
 });
-
+router.get("/contact", async (req, res) => {
+  console.log("Grabing all the Contact From HamroBazzar");
+  await fetchContact();
+  // res.redirect("/");
+});
 router.get("/services", async (req, res) => {
   await fetchServiceData();
   res.redirect("/");
