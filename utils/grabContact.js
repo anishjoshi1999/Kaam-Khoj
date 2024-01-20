@@ -1,7 +1,8 @@
 const axios = require("axios");
 const dotenv = require("dotenv");
 dotenv.config();
-const uniqueContactInfo = new Set();
+const Contact = require("../Models/Contact");
+
 async function fetchContact() {
   try {
     const response = await axios.get(
@@ -42,7 +43,7 @@ async function fetchContact() {
 async function getAll(CategoryId, nextPageNumber = 1) {
   try {
     const response = await axios.get(
-      `https://api.hamrobazaar.com/api/Product?PageSize=100&CategoryId=${CategoryId}&IsHBSelect=false&PageNumber=${nextPageNumber}`,
+      `https://api.hamrobazaar.com/api/Product?PageSize=250&CategoryId=${CategoryId}&IsHBSelect=false&PageNumber=${nextPageNumber}`,
       {
         headers: {
           accept: "application/json, text/plain, */*",
@@ -81,18 +82,38 @@ async function getAll(CategoryId, nextPageNumber = 1) {
       if (nextPage == 2) {
         console.log(`Total Records: ${totalRecords}`);
       }
-      await getAll(CategoryId, nextPage);
+      const value = [];
+      const uniqueSet = new Set();
+
       data.forEach((element) => {
         if (!element.creatorInfo.createdByUsername.includes("*")) {
-          uniqueContactInfo.add({
-            Name: element.creatorInfo.createdByName,
-            Contact: element.creatorInfo.createdByUsername,
-          });
+          const contactObject = {
+            name: element.creatorInfo.createdByName,
+            contact: element.creatorInfo.createdByUsername,
+          };
+
+          // Convert the contact object to a string for Set comparison
+          const contactString = JSON.stringify(contactObject);
+
+          if (!uniqueSet.has(contactString)) {
+            // If the contact object is not in the Set, push it to the array and add it to the Set
+            value.push(contactObject);
+            uniqueSet.add(contactString);
+          }
         }
       });
+      try {
+        await Contact.insertMany(value);
+        console.log(
+          `Successfully inserted Contact Information for ${nextPage - 1}`
+        );
+        delete value;
+        delete uniqueSet;
+      } catch (error) {
+        console.log("Something went wrong");
+      }
+      await getAll(CategoryId, nextPage);
     } else {
-      const uniqueContactArray = Array.from(uniqueContactInfo);
-      console.log("Unique Contact Information:", uniqueContactArray);
       return;
     }
   } catch (error) {
