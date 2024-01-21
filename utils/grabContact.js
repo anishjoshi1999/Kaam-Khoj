@@ -31,8 +31,10 @@ async function fetchContact() {
     // Do something with the response data
     const { data } = response.data;
     for (const category of data) {
-      console.log(`Currently Scraping ${category.id} Category`);
-      await getAll(category.id);
+      if (category.id == "00000000-0000-0000-0000-000000000000") {
+        console.log(`Currently Scraping ${category.id} Category`);
+        await getAll(category.id);
+      }
     }
   } catch (error) {
     // Handle errors
@@ -84,24 +86,28 @@ async function getAll(CategoryId, nextPageNumber = 1) {
       }
       const value = [];
       const uniqueSet = new Set();
+      for (let i = 0; i < data.length; i++) {
+        try {
+          if (!data[i].creatorInfo.createdByUsername.includes("*")) {
+            const contactObject = {
+              name: data[i].creatorInfo.createdByName,
+              contact: data[i].creatorInfo.createdByUsername,
+            };
 
-      data.forEach((element) => {
-        if (!element.creatorInfo.createdByUsername.includes("*")) {
-          const contactObject = {
-            name: element.creatorInfo.createdByName,
-            contact: element.creatorInfo.createdByUsername,
-          };
+            // Convert the contact object to a string for Set comparison
+            const contactString = JSON.stringify(contactObject);
 
-          // Convert the contact object to a string for Set comparison
-          const contactString = JSON.stringify(contactObject);
-
-          if (!uniqueSet.has(contactString)) {
-            // If the contact object is not in the Set, push it to the array and add it to the Set
-            value.push(contactObject);
-            uniqueSet.add(contactString);
+            if (!uniqueSet.has(contactString)) {
+              // If the contact object is not in the Set, push it to the array and add it to the Set
+              value.push(contactObject);
+              uniqueSet.add(contactString);
+            }
           }
+        } catch (error) {
+          continue;
         }
-      });
+      }
+
       try {
         await Contact.insertMany(value);
         console.log(
