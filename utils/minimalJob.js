@@ -34,24 +34,19 @@ async function fetchData() {
         method: "GET",
       }
     );
-    console.log(response.data.data.length);
-    // const regex =
-    //   /\b(helper|cook|driver|sale|delivery|needed|sales|required|nanny|cashier|सिक्युरिटी|security|maid|peon|cleaner|technician|receptionist|waiter|हेल्पर|waitress|mechanic|कुक|हाउसकिपिङ|guard)\b/i;
-    // const excludeRegex =
-    //   /\b(chahi|need|u|if|available|ma|chahiya|ma|hola|call|garnu|\d{10,})\b/i;
 
     const withPhoneNumbers = response.data.data.filter((element) => {
       return !element.creatorInfo.createdByUsername.includes("*");
     });
-    console.log(withPhoneNumbers.length);
+    //Add Brokers if you want to exclude them
+    const excludeRegex =
+      /^(Paramount Management Solution Pvt\.Ltd|Malaxmi Job Placement|Meraki Job)$/i;
 
-    // const filteredJobInfos = withPhoneNumbers.filter((element) => {
-    //   return !excludeRegex.test(element.name.toLowerCase());
-    // });
-    // console.log(filteredJobInfos);
-
+    const withoutBroker = withPhoneNumbers.filter((element) => {
+      return !excludeRegex.test(element.creatorInfo.createdByName.trim());
+    });
     // Only want the job which are less than 2 months old
-    let final = withPhoneNumbers.filter((job) => {
+    let final = withoutBroker.filter((job) => {
       return (
         job.createdTime.includes("mins") ||
         job.createdTime.includes("hours") ||
@@ -61,7 +56,6 @@ async function fetchData() {
       );
     });
 
-    // console.log(`Fetched ${final.length} latest jobs`);
     let temp = final.map((element) => ({
       jobName: toTitleCase(element.name),
       salary: checkForSalary(element.price),
@@ -71,12 +65,24 @@ async function fetchData() {
       location: toTitleCase(element.location.locationDescription),
       createdTime: element.createdTime,
     }));
-    // console.log(temp[0]);
+    let infoScrape = {
+      totalJobProviders: response.data.data.length,
+      phoneNumber: withPhoneNumbers.length,
+      withoutBroker: withoutBroker.length,
+      postWithIn2Months: temp.length,
+    };
+
+    const jobInstance = new Job({
+      type: "job", // Set a type for the document if needed
+      scrapedInfo: infoScrape,
+      total: temp, // total Job Providers
+    });
+
     // Clear existing jobs in the database
     await Job.deleteMany({});
 
-    // // Save all jobs to MongoDB in a single insertMany operation
-    await Job.insertMany(temp);
+    // Save the job instance to MongoDB
+    await jobInstance.save();
     console.log("Inserted successfully");
   } catch (error) {
     console.error("Error fetching and saving data:", error.message);

@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
   let jobs = await Job.find({});
-  let randomJobs = getRandomObjects(jobs);
+  let randomJobs = getRandomObjects(jobs[0].total);
   const combinedNews = randomJobs
     .map((element, index) => {
       return `Position ${index + 1}:  ${element.jobName}, Salary: Rs ${

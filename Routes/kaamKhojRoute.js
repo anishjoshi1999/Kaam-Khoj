@@ -1,12 +1,12 @@
 const express = require("express");
-const Job = require("../Models/Job");
-const Service = require("../Models/service");
-const Contact = require("../Models/Contact");
+// const Job = require("../Models/Job");
+// const Service = require("../Models/service");
+// const Contact = require("../Models/Contact");
 const router = express.Router();
 
 const { fetchData } = require("../utils/minimalJob");
-const { fetchServiceData } = require("../utils/service");
-const { fetchContact } = require("../utils/grabContact");
+// const { fetchServiceData } = require("../utils/service");
+// const { fetchContact } = require("../utils/grabContact");
 
 router.get("/jobs", async (req, res) => {
   await fetchData();
@@ -42,9 +42,9 @@ router.get("/jobs", async (req, res) => {
 //     res.status(500).json({ error: "Internal Server Error" });
 //   }
 // });
-router.get("/services", async (req, res) => {
-  await fetchServiceData();
-  res.redirect("/");
-});
+// router.get("/services", async (req, res) => {
+//   await fetchServiceData();
+//   res.redirect("/");
+// });
 
 module.exports = router;
