@@ -1,7 +1,21 @@
-const axios = require("axios");
+const mongoose = require("mongoose");
 const dotenv = require("dotenv");
+const Contact = require("./Models/Contact");
+const axios = require("axios");
 dotenv.config();
-const Contact = require("../Models/Contact");
+const PORT = process.env.PORT || 4000;
+const MONGODB_URI = `${process.env.MONGODB_URI}`;
+
+mongoose.set("strictQuery", false);
+
+mongoose
+  .connect(MONGODB_URI)
+  .then(() => {
+    console.log("Connected to MongoDB Atlas");
+  })
+  .catch((err) => {
+    console.error("Error connecting to MongoDB Atlas:", err);
+  });
 
 async function fetchContact() {
   try {
@@ -138,4 +152,7 @@ async function getAll(CategoryId) {
   }
 }
 
-module.exports = { fetchContact };
+(async () => {
+  // Immediately Invoked Function Expression (IIFE)
+  await fetchContact();
+})();

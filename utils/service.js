@@ -4,7 +4,7 @@ const { toTitleCase, checkForSalary } = require("./usefulMethods");
 async function fetchServiceData() {
   try {
     const response = await axios(
-      "https://api.hamrobazaar.com/api/Product?PageSize=6000&CategoryId=AA71A415-8970-46FF-A775-D1BC2089CB87&IsHBSelect=false&PageNumber=1",
+      "https://api.hamrobazaar.com/api/Product?PageSize=1000&CategoryId=AA71A415-8970-46FF-A775-D1BC2089CB87&IsHBSelect=false&PageNumber=1",
       {
         headers: {
           accept: "application/json, text/plain, */*",
@@ -30,8 +30,6 @@ async function fetchServiceData() {
     const withPhoneNumbers = response.data.data.filter((element) => {
       return !element.creatorInfo.createdByUsername.includes("*");
     });
-    console.log(response.data.data.length);
-    console.log(withPhoneNumbers);
     let final = withPhoneNumbers.filter((job) => {
       return (
         job.createdTime.includes("mins") ||

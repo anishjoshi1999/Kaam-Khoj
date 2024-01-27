@@ -12,6 +12,7 @@ const MONGODB_URI = `${process.env.MONGODB_URI}`;
 //Import Routes
 const kaamKhojRoute = require("./Routes/kaamKhojRoute");
 const facebookRoute = require("./Routes/facebookRoute");
+const apiRoute = require("./Routes/apiRoute");
 mongoose.set("strictQuery", false);
 
 mongoose
@@ -31,4 +32,5 @@ app.get("/", (req, res) => {
   res.send("Kaam Khoj");
 });
 app.use("/kaamkhoj", kaamKhojRoute);
+app.use("/api", apiRoute);
 app.use("/facebook", facebookRoute);
