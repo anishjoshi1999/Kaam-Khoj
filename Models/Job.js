@@ -4,6 +4,7 @@ const jobSchema = new mongoose.Schema({
   jobName: String,
   salary: String,
   ownerName: String,
+  description: String,
   contactNumber: String,
   location: String,
   createdTime: String,

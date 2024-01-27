@@ -34,22 +34,24 @@ async function fetchData() {
         method: "GET",
       }
     );
-
-    const regex =
-      /\b(helper|cook|driver|sale|delivery|needed|sales|required|nanny|cashier|सिक्युरिटी|security|maid|peon|cleaner|technician|receptionist|waiter|हेल्पर|waitress|mechanic|कुक|हाउसकिपिङ|guard)\b/i;
-    const excludeRegex =
-      /\b(chahi|need|u|if|available|ma|chahiya|ma|hola|call|garnu|\d{10,})\b/i;
+    console.log(response.data.data.length);
+    // const regex =
+    //   /\b(helper|cook|driver|sale|delivery|needed|sales|required|nanny|cashier|सिक्युरिटी|security|maid|peon|cleaner|technician|receptionist|waiter|हेल्पर|waitress|mechanic|कुक|हाउसकिपिङ|guard)\b/i;
+    // const excludeRegex =
+    //   /\b(chahi|need|u|if|available|ma|chahiya|ma|hola|call|garnu|\d{10,})\b/i;
 
     const withPhoneNumbers = response.data.data.filter((element) => {
       return !element.creatorInfo.createdByUsername.includes("*");
     });
+    console.log(withPhoneNumbers.length);
 
-    const filteredJobInfos = withPhoneNumbers.filter((element) => {
-      return !excludeRegex.test(element.name.toLowerCase());
-    });
+    // const filteredJobInfos = withPhoneNumbers.filter((element) => {
+    //   return !excludeRegex.test(element.name.toLowerCase());
+    // });
+    // console.log(filteredJobInfos);
 
     // Only want the job which are less than 2 months old
-    let final = filteredJobInfos.filter((job) => {
+    let final = withPhoneNumbers.filter((job) => {
       return (
         job.createdTime.includes("mins") ||
         job.createdTime.includes("hours") ||
@@ -59,20 +61,23 @@ async function fetchData() {
       );
     });
 
-    console.log(`Fetched ${final.length} latest jobs`);
+    // console.log(`Fetched ${final.length} latest jobs`);
     let temp = final.map((element) => ({
       jobName: toTitleCase(element.name),
       salary: checkForSalary(element.price),
       ownerName: toTitleCase(element.creatorInfo.createdByName),
+      description: element.description.trim(),
       contactNumber: toTitleCase(element.creatorInfo.createdByUsername),
       location: toTitleCase(element.location.locationDescription),
       createdTime: element.createdTime,
     }));
+    // console.log(temp[0]);
     // Clear existing jobs in the database
     await Job.deleteMany({});
 
-    // Save all jobs to MongoDB in a single insertMany operation
+    // // Save all jobs to MongoDB in a single insertMany operation
     await Job.insertMany(temp);
+    console.log("Inserted successfully");
   } catch (error) {
     console.error("Error fetching and saving data:", error.message);
     // or console.error("Error fetching and saving data:", error.response.data);
