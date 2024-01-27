@@ -1,6 +1,7 @@
 const axios = require("axios");
 const Job = require("../Models/Job");
 const { toTitleCase, checkForSalary } = require("./usefulMethods");
+
 async function fetchData() {
   try {
     const response = await axios.get(
@@ -46,9 +47,8 @@ async function fetchData() {
     const filteredJobInfos = withPhoneNumbers.filter((element) => {
       return !excludeRegex.test(element.name.toLowerCase());
     });
-    // Clear existing jobs in the database
-    await Job.deleteMany({});
-    //Only want the job which are less than 2 months old
+
+    // Only want the job which are less than 2 months old
     let final = filteredJobInfos.filter((job) => {
       return (
         job.createdTime.includes("mins") ||
@@ -58,24 +58,24 @@ async function fetchData() {
           !job.createdTime.includes("11 months"))
       );
     });
+
     console.log(`Fetched ${final.length} latest jobs`);
-    // Save each job to MongoDB
-    for (const element of final) {
-      const job = new Job({
-        jobName: toTitleCase(element.name),
-        salary: checkForSalary(element.price),
-        ownerName: toTitleCase(element.creatorInfo.createdByName),
-        contactNumber: toTitleCase(element.creatorInfo.createdByUsername),
-        location: toTitleCase(element.location.locationDescription),
-        createdTime: element.createdTime,
-      });
+    let temp = final.map((element) => ({
+      jobName: toTitleCase(element.name),
+      salary: checkForSalary(element.price),
+      ownerName: toTitleCase(element.creatorInfo.createdByName),
+      contactNumber: toTitleCase(element.creatorInfo.createdByUsername),
+      location: toTitleCase(element.location.locationDescription),
+      createdTime: element.createdTime,
+    }));
+    // Clear existing jobs in the database
+    await Job.deleteMany({});
 
-      await job.save();
-    }
-
-    console.log("Hit the Jobs API Route");
+    // Save all jobs to MongoDB in a single insertMany operation
+    await Job.insertMany(temp);
   } catch (error) {
-    console.error("Error fetching and saving data:", error);
+    console.error("Error fetching and saving data:", error.message);
+    // or console.error("Error fetching and saving data:", error.response.data);
   }
 }
 

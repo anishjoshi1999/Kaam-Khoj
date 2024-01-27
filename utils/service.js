@@ -39,8 +39,7 @@ async function fetchServiceData() {
           !job.createdTime.includes("11 months"))
       );
     });
-    // Clear existing services in the database
-    await Service.deleteMany({});
+
     const finalService = final.map((element) => {
       return {
         jobName: toTitleCase(element.name),
@@ -51,6 +50,8 @@ async function fetchServiceData() {
         createdTime: element.createdTime,
       };
     });
+    // Clear existing services in the database
+    await Service.deleteMany({});
     await Service.insertMany(finalService);
     console.log(`${finalService.length} Data saved to MongoDB successfully.`);
   } catch (error) {
