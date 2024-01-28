@@ -47,12 +47,14 @@ async function fetchData() {
     });
     // Only want the job which are less than 2 months old
     let final = withoutBroker.filter((job) => {
+      // Extract the number of days from the createdTime
+      const daysAgo = parseInt(job.createdTime.match(/\d+/)[0]);
+
+      // Check if the job was created within the last 7 days
       return (
         job.createdTime.includes("mins") ||
         job.createdTime.includes("hours") ||
-        job.createdTime.includes("days") ||
-        (job.createdTime.includes("1 month") &&
-          !job.createdTime.includes("11 months"))
+        (job.createdTime.includes("days") && daysAgo <= 7)
       );
     });
 
