@@ -2,7 +2,10 @@ const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
 const dotenv = require("dotenv");
+const cors = require("cors");
 
+// Enable CORS for all routes
+app.use(cors());
 dotenv.config();
 app.set("view engine", "ejs");
 app.use(express.static(__dirname + "/public"));
