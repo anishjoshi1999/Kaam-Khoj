@@ -72,18 +72,26 @@ async function fetchData() {
       postWithIn2Months: temp.length,
     };
 
-    const jobInstance = new Job({
-      type: "job", // Set a type for the document if needed
-      scrapedInfo: infoScrape,
-      total: temp, // total Job Providers
-    });
+    const existingDocument = await Job.findOne({ type: "job" });
 
-    // Clear existing jobs in the database
-    await Job.deleteMany({});
-
-    // Save the job instance to MongoDB
-    await jobInstance.save();
-    console.log("Inserted successfully");
+    // If the document exists, update it; otherwise, create a new one
+    if (existingDocument) {
+      // Update the existing document
+      await Job.updateOne(
+        { type: "job" },
+        { $set: { scrapedInfo: infoScrape, total: temp } }
+      );
+      console.log("Updated successfully");
+    } else {
+      // Create a new document if it doesn't exist
+      const jobInstance = new Job({
+        type: "job",
+        scrapedInfo: infoScrape,
+        total: temp,
+      });
+      await jobInstance.save();
+      console.log("Inserted successfully");
+    }
   } catch (error) {
     console.error("Error fetching and saving data:", error.message);
     // or console.error("Error fetching and saving data:", error.response.data);
