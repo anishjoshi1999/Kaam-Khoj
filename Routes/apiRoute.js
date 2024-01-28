@@ -75,9 +75,7 @@ router.get("/jobs", async (req, res) => {
 });
 router.get("/search", async (req, res) => {
   try {
-    const searchQuery = req.query.searchQuery;
-    const searchNoSpecialChar = searchQuery.replace(/[^a-zA-Z0-9 ]/g, "");
-    console.log(searchNoSpecialChar);
+    const searchQuery = req.query.searchQuery.replace(/[^a-zA-Z0-9 ]/g, "");
 
     if (!searchQuery) {
       res.status(400).json({ error: "Search query is required." });
