@@ -96,6 +96,8 @@ router.get("/search", async (req, res) => {
           $or: [
             { "total.jobName": searchRegex },
             { "total.description": searchRegex },
+            { "total.salary": searchRegex },
+            { "total.ownerName": searchRegex },
             { "total.contactNumber": searchRegex },
             { "total.location": searchRegex },
             { "total.createdTime": searchRegex },
