@@ -9,7 +9,9 @@ app.use(cors());
 dotenv.config();
 app.set("view engine", "ejs");
 app.use(express.static(__dirname + "/public"));
-
+// Enable body parsing
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = `${process.env.MONGODB_URI}`;
 //Import Routes
