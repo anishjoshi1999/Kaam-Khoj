@@ -145,6 +145,15 @@ router.post("/upload", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+router.get("/view", async (req, res) => {
+  try {
+    let temp = await Upload.find({});
+    res.status(201).json(temp);
+  } catch (error) {
+    console.error("Error handling form submission:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 // router.get("/services", async (req, res) => {
 //   try {
 //     let jobs = await Service.find({});
