@@ -1,41 +1,60 @@
 const express = require("express");
-const mongoose = require("mongoose");
-const app = express();
 const dotenv = require("dotenv");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
+const session = require("express-session");
+const MongoStore = require("connect-mongo");
 
-// Enable CORS for all routes
-app.use(cors());
+const methodOverride = require("method-override");
+
+const { PORT, MONGODB_URI } = require("./utils/constants");
+
 dotenv.config();
-app.set("view engine", "ejs");
-app.use(express.static(__dirname + "/public"));
-// Enable body parsing
+
+const app = express();
+
+app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-const PORT = process.env.PORT || 3000;
-const MONGODB_URI = `${process.env.MONGODB_URI}`;
-//Import Routes
-const kaamKhojRoute = require("./Routes/kaamKhojRoute");
-const facebookRoute = require("./Routes/facebookRoute");
-const apiRoute = require("./Routes/apiRoute");
-mongoose.set("strictQuery", false);
-
-mongoose
-  .connect(MONGODB_URI)
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server is running on :${PORT}`);
-    });
-    console.log("Connected to MongoDB Atlas");
+app.use(cookieParser());
+app.use(
+  session({
+    secret: "keyboard cat",
+    resave: false,
+    saveUninitialized: true,
+    store: MongoStore.create({
+      mongoUrl: MONGODB_URI,
+    }),
   })
-  .catch((err) => {
-    console.error("Error connecting to MongoDB Atlas:", err);
-  });
+);
+app.use(methodOverride("_method"));
 
-//Routes
-app.get("/", (req, res) => {
-  res.send("Kaam Khoj");
+const connectDB = require("./utils/connectDB");
+
+connectDB(MONGODB_URI);
+
+const apiRoute = require("./Routes/apiRoute");
+const hamroBazzarRoute = require("./Routes/hamrobazzarRoute");
+const facebookRoute = require("./Routes/facebookRoute");
+
+app.get("/", async (req, res) => {
+  try {
+    res.json({ message: "Welcome To KaamKhoj API" });
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
-app.use("/kaamkhoj", kaamKhojRoute);
+// To Upload Job Seeker's and Job Provider's Information
 app.use("/api", apiRoute);
+// To Look through from hamrobazzar
+app.use("/hamrobazzar", hamroBazzarRoute);
+// To Post it on facebook
 app.use("/facebook", facebookRoute);
+
+app.use((req, res, next) => {
+  res.status(404).json({ error: "Not Found" });
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});

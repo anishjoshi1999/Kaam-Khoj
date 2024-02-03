@@ -1,7 +1,7 @@
 const axios = require("axios");
 const Job = require("../Models/Job");
 const { toTitleCase, checkForSalary } = require("./usefulMethods");
-
+const { APIKEY, DEVICEID } = require("./constants");
 async function fetchData() {
   try {
     const response = await axios.get(
@@ -9,21 +9,15 @@ async function fetchData() {
       {
         headers: {
           accept: "application/json, text/plain, */*",
-          "accept-language": "en-GB,en-US;q=0.9,en;q=0.8,la;q=0.7,ne;q=0.6",
           "access-control-allow-origin": "*",
-          apikey: "09BECB8F84BCB7A1796AB12B98C1FB9E",
-          "cache-control": "no-cache",
+          apikey: APIKEY,
           country_code: "null",
-          deviceid: "89700155-17fd-452c-b9e4-718f5dc70c5f",
+          deviceid: DEVICEID,
           devicesource: "web",
-          pragma: "no-cache",
           "sec-ch-ua":
-            '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+            '"Not A(Brand";v="99", "Google Chrome";v="121", "Chromium";v="121"',
           "sec-ch-ua-mobile": "?0",
           "sec-ch-ua-platform": '"Windows"',
-          "sec-fetch-dest": "empty",
-          "sec-fetch-mode": "cors",
-          "sec-fetch-site": "same-site",
           "strict-transport-security": "max-age=2592000",
           "x-content-type-options": "nosniff",
           "x-frame-options": "SAMEORIGIN",
@@ -34,17 +28,18 @@ async function fetchData() {
         method: "GET",
       }
     );
-
     const withPhoneNumbers = response.data.data.filter((element) => {
       return !element.creatorInfo.createdByUsername.includes("*");
     });
     //Add Brokers if you want to exclude them
     const excludeRegex =
-      /^(Paramount Management Solution Pvt\.Ltd|Malaxmi Job Placement|Meraki Job)$/i;
+      /^(Paramount Management Solution Pvt\.Ltd|Malaxmi Job Placement|Meraki Job|Urgent Job Wanted|Looking For Job|Online Typing)$/i;
 
     const withoutBroker = withPhoneNumbers.filter((element) => {
-      return !excludeRegex.test(element.creatorInfo.createdByName.trim());
+      const createdByName = element.creatorInfo.createdByName;
+      return !excludeRegex.test(createdByName && createdByName.trim());
     });
+
     // Only want the job which are less than 2 months old
     let final = withoutBroker.filter((job) => {
       // Extract the number of days from the createdTime
@@ -62,7 +57,7 @@ async function fetchData() {
       jobName: toTitleCase(element.name),
       salary: checkForSalary(element.price),
       ownerName: toTitleCase(element.creatorInfo.createdByName),
-      description: element.description.trim(),
+      description: element.description,
       contactNumber: toTitleCase(element.creatorInfo.createdByUsername),
       location: toTitleCase(element.location.locationDescription),
       createdTime: element.createdTime,

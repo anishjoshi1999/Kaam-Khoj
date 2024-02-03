@@ -1,5 +1,5 @@
 function toTitleCase(inputString) {
-  if (!inputString) return ""; // Add this line to handle null or undefined values
+  if (!inputString) return "";
 
   const words = inputString.toLowerCase().split(" ");
   const titleCaseWords = words.map(
@@ -9,15 +9,12 @@ function toTitleCase(inputString) {
 }
 
 function checkForSalary(value) {
-  let salary = Number(value);
-  if (!isNaN(salary) && salary !== undefined) {
-    if (salary <= 5000) {
-      return "Negotiable";
-    } else {
-      return value;
-    }
-  } else {
+  const salary = Number(value);
+
+  if (!isNaN(salary) && salary > 5000) {
     return value;
+  } else {
+    return "Negotiable";
   }
 }
 
